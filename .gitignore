@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# data / model artifacts
+data/
+datasets/
+checkpoints/
+checkpoint/
+outputs/
+logs/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# local credentials and platform temp files
+tmp/
+*.cookie
+*headers*.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
