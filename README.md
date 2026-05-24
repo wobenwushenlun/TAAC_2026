@@ -1,12 +1,10 @@
 # TAAC 2026 CVR Prediction Solution
 
-本仓库整理了我在 TAAC2026 广告转化率预测赛道中最终保留的单模型方案。仓库只保留可公开复现思路的核心代码：
+本仓库整理了我在 TAAC2026 广告转化率预测赛道中最终保留的单模型方案，以及比赛过程中用于提升迭代效率的平台自动化脚本。
 
 - `baseline/`：官方 baseline 代码，作为对照和复现实验入口。
 - `version/v080/`：最终保留版本代码。
-- `automation_submission/`：自动化提交脚本的脱敏使用说明，不包含 cookie、headers、真实任务 ID 或个人路径。
-
-未上传内容包括：训练数据、测试数据、模型 checkpoint、平台日志、平台 headers/cookie、个人任务 ID、临时实验版本和本地缓存文件。
+- `automation_submission/`：训练任务创建、checkpoint 发布、评估任务提交的自动化脚本和使用说明。
 
 ## 1. 比赛背景
 
@@ -172,7 +170,11 @@ v080 在几个容易放大噪声的投影路径上加入非常小的 dropout：
 .
 ├── README.md
 ├── automation_submission/
-│   └── README.md
+│   ├── README.md
+│   └── scripts/
+│       ├── taiji_training.py
+│       ├── taiji_ckpt.py
+│       └── taiji_eval.py
 ├── baseline/
 │   ├── dataset.py
 │   ├── infer.py
@@ -206,7 +208,7 @@ python -m py_compile baseline/*.py
 python -m py_compile version/v080/*.py
 ```
 
-在官方平台提交时，将 `version/v080/` 下的代码文件替换到平台训练模板即可。自动化提交的脱敏说明见：
+在官方平台提交时，将 `version/v080/` 下的代码文件替换到平台训练模板即可。自动化提交流程见：
 
 ```text
 automation_submission/README.md

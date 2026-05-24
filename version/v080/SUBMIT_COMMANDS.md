@@ -1,9 +1,9 @@
 # v080 提交说明
 
-本文件只保留脱敏后的提交命令模板。真实平台账号信息、headers/cookie、任务 ID、项目 ID 和本地绝对路径不要提交到仓库。
+训练侧需要替换 7 个文件：`dataset.py`、`model.py`、`ns_groups.json`、`run.sh`、`train.py`、`trainer.py`、`utils.py`。
 
 ```powershell
-python .\scripts\taiji_training.py `
+python .\automation_submission\scripts\taiji_training.py `
   --headers-file <LOCAL_HEADERS_FILE> `
   --create `
   --new-job-name taac2026_v080 `
