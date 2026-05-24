@@ -89,9 +89,9 @@ baseline 对齐
 
 典型现象：
 
-- v085 same-fid pair gate 的 valid 指标很好，但测试 AUC 只有 `0.813999`。
-- v088 user/item low-rank pair token 的 valid 接近 v080，但测试 AUC 只有 `0.815706`。
-- v082 hour-only token 的 valid 好于主线，但测试 AUC 下降到 `0.823677`。
+- 将同一 fid 下的用户离散 ID embedding 与对应 dense 数值做门控融合后，valid 指标很好，但测试 AUC 只有 `0.813999`。
+- 将用户表示和物品表示降维后做内积，并把这个 user-item pair 表示作为额外 token 加入主干后，valid 接近最终主线，但测试 AUC 只有 `0.815706`。
+- 将曝光小时做成额外 hour token 加入主干后，valid 好于主线，但测试 AUC 下降到 `0.823677`。
 
 这说明很多特征交互版本学到的是训练分布内的共现模式或时间先验，而不是可泛化排序能力。因此后期我不再只看 valid AUC，而是同时看：
 
@@ -212,10 +212,11 @@ v080 在几个容易放大噪声的投影路径上加入非常小的 dropout：
 | 方向 | 现象 | 深层原因 |
 | --- | --- | --- |
 | hour/day/date 强离散 token | valid 可能提升，test 下降 | 容易记忆训练窗口的小时/日期先验 |
-| missing group gate | 测试明显下降 | 粗粒度缺失组无法替代原有细粒度 missing 表达 |
-| same-fid / user-item pair token | valid 虚高，test 掉点 | 重复放大 user/item 共现噪声，泛化弱 |
-| DIN / target attention 变体 | 没有稳定超过主线 | 与已有 Q token cross-attention 功能重叠 |
-| TokenFormer / MLCC 强 context 注入 | 表达力增强但 test 不稳 | 多次注入 context token，放大验证集局部模式 |
+| 将多个缺失字段聚合成 group gate，并替代原 missing 辅助路径 | 测试明显下降 | 粗粒度缺失组无法替代原有细粒度 missing 表达 |
+| 同一 fid 下用户离散 ID 与 dense 数值做门控融合 | valid 虚高，test 掉点 | 这类特征和原 user embedding / user dense token 同源，容易重复放大用户侧局部模式 |
+| 用户表示和物品表示降维后做内积，再作为 pair token 加入模型 | valid 接近主线，test 明显下降 | pair token 捕捉共现很强，但对随机验证集更友好，对时间漂移后的测试集泛化弱 |
+| 用目标物品 embedding 初始化 query 或增加 DIN 式 target attention | 没有稳定超过主线 | 与已有 Q token cross-attention 功能重叠，新增路径带来的信息增量有限 |
+| 多个上下文 token 反复注入 Q/NS/Seq 主干 | 表达力增强但 test 不稳 | 多次注入 context token，容易放大验证集局部模式 |
 | 单纯扩模型容量或换优化器 | 收益不稳定 | 当前瓶颈不是容量不足，而是信号注入和验证集错配 |
 | 简单 long sequence summary / recent top-k | 加速有效，精度不足 | recent-only 可能丢掉长期偏好，简单 summary 表达力不够 |
 
@@ -225,10 +226,10 @@ v080 在几个容易放大噪声的投影路径上加入非常小的 dropout：
 
 推荐模型里很多特征不是没有进入模型，而是已经通过其他路径表达过：
 
-- user dense 已经进入 dense token，再做 user-item pair token 可能重复放大；
-- missing 状态已经影响原始特征取值和辅助路径，再做粗 group gate 可能丢掉字段级差异；
+- user dense 已经进入 dense token，再把用户向量和物品向量做低维内积并新增 pair token，可能重复放大 user-item 共现；
+- missing 状态已经影响原始特征取值和辅助路径，再把多个缺失字段压成一个粗粒度 gate，可能丢掉字段级差异；
 - hour/day 已经通过周期时间 token 进入主干，再加离散 hour token 容易记忆局部时间先验；
-- same-fid int/dense 融合如果不替换原路径，而是额外新增 token，容易造成冗余。
+- 同一 fid 下的用户离散 ID 和 dense 数值如果只是额外融合，而不替换原有 user embedding / user dense 路径，容易造成冗余。
 
 所以后期一个重要判断是：**新增特征前先问它是否提供了新的信息，而不是只问它是否看起来有业务意义。**
 
@@ -246,7 +247,7 @@ v080 在几个容易放大噪声的投影路径上加入非常小的 dropout：
 
 ### 7.4 valid/test 错配会放大错误方向
 
-如果验证集是随机切分，而测试集集中在某个日期/小时窗口，模型很容易在 valid 上学习到局部共现或时间先验。v085、v088 这类 pair 版本就是典型：valid 指标很好，但 public test 掉点很大。
+如果验证集是随机切分，而测试集集中在某个日期/小时窗口，模型很容易在 valid 上学习到局部共现或时间先验。用户-物品 pair token、同 fid 用户特征门控融合这类版本就是典型：valid 指标很好，但 public test 掉点很大。
 
 因此后期判断一个版本是否值得测试，不能只看 best valid AUC，还要看：
 
@@ -256,39 +257,18 @@ v080 在几个容易放大噪声的投影路径上加入非常小的 dropout：
 - 是否重复注入同源信息；
 - 是否能解释 public test 分布下的泛化。
 
-## 8. 面试可追问问题与回答思路
+## 8. 后续可继续优化的方向
 
-### Q1：为什么时间特征进入主干会比后层拼接更有效？
+如果继续迭代，我会优先做三件事：
 
-后层拼接只能在最终分类头做 logit 校准，而时间会影响历史行为的语义解释。比如同样的用户历史，在不同曝光时段可能对应不同意图强度。把时间做成 prefix token 后，它可以参与序列 self-attention、query 生成和 cross-attention，让模型在构造用户表示时就融合当前请求上下文。
+1. **构建更贴近线上分布的验证集。**  
+   当前最明显的问题是随机验证集会高估时间先验和 user-item 共现特征。更合理的方式是增加时间切片验证，例如单独观察最后一天、重点小时段、长序列样本和高缺失样本上的 AUC/LogLoss。
 
-### Q2：为什么不用更强的 hour/date embedding？
+2. **系统化处理高基数 embedding。**  
+   高基数字段既带来表达能力，也带来长尾过拟合和训练成本。后续更值得系统探索 hash/shared embedding、频次分桶、低频 ID 合并、OOV 表达和 embedding 正则，而不是继续扩大 dense MLP 容量。
 
-hour/date 的区分度确实强，但训练集和测试集存在时间窗口差异。高自由度离散 embedding 容易记忆训练窗口里某个小时或日期的 CVR 先验，导致验证集提升但测试不稳。sin/cos 周期特征是更低自由度的表达，能保留周期性，又减少记忆绝对时间的风险。
-
-### Q3：为什么 pair 特征看起来有业务意义，最后反而掉点？
-
-pair 特征容易捕捉 user/item 共现，但在当前模型里 user embedding、item embedding、dense token、NS token 已经表达了大量同源信息。额外 pair token 如果不是替换式融合，而是直接新增，会重复放大共现噪声。它在随机验证集上可能有效，但 public test 分布变化时泛化差。
-
-### Q4：为什么没有继续扩大模型容量？
-
-扩容量的前提是模型欠拟合。但实验中很多复杂结构 valid 高、test 低，说明主要瓶颈不是表达能力不足，而是过拟合、信息冗余和验证集错配。盲目加大容量会让模型更快拟合局部模式，未必提升线上排序能力。
-
-### Q5：长序列这么明显，为什么长序列 summary 没有效？
-
-长序列问题是真实存在的，但简单 summary token 或 recent top-k 不一定能保留有效偏好。recent-only 会丢掉旧历史中的稳定兴趣，简单 mean/summary 又可能太粗。更合理的方向应是目标感知的历史选择，或者 recent window + long-term summary 的组合，而不是只压缩成一个弱 token。
-
-### Q6：为什么轻正则有效，但大正则或复杂 gate 不一定有效？
-
-v080 的轻正则只约束辅助投影和输出投影，不破坏核心时间主干路径。复杂 gate 或大正则如果作用在强信号主路径上，可能会削弱有效信息；如果作用在冗余特征上，又可能放大局部噪声。正则要和特征路径匹配，而不是统一加大。
-
-### Q7：如果继续优化，会优先做什么？
-
-我会优先做三件事：
-
-1. 构建更贴近 public test 的时间切片验证集，减少 random valid 误导。
-2. 对高基数 embedding 做系统化降参，例如 hash/shared embedding、频次分桶和更稳的 OOV 处理。
-3. 对长序列做目标感知选择，把 recent 行为和长期偏好摘要结合，而不是简单截断。
+3. **做目标感知的长序列选择。**  
+   长序列问题是真实存在的，但简单 recent top-k 或单个 summary token 不够。更合理的做法是结合目标 item/query，对历史行为做相关性选择，同时保留长期偏好摘要，形成 recent window + long-term memory 的结构。
 
 ## 9. 目录结构
 
