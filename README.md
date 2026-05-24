@@ -6,6 +6,7 @@
 - `baseline/`：官方 baseline 代码，作为对照和复现实验入口。
 - `version/v080/`：最终保留版本代码。
 - `automation_submission/`：训练任务创建、checkpoint 发布、评估任务提交的自动化脚本和使用说明。
+- `leaderboard_visualization/`：基于公开排行榜数据生成的排名、分数和分布可视化。
 
 ## 1. 比赛背景
 
@@ -282,6 +283,13 @@ v080 在几个容易放大噪声的投影路径上加入非常小的 dropout：
 │       ├── taiji_training.py
 │       ├── taiji_ckpt.py
 │       └── taiji_eval.py
+├── leaderboard_visualization/
+│   ├── README.md
+│   ├── visualize_self_supervised.py
+│   ├── self_supervised_leaderboard_dashboard.png
+│   ├── self_supervised_leaderboard_dashboard.svg
+│   ├── self_supervised_leaderboard_dashboard.html
+│   └── self_supervised_leaderboard_summary.json
 ├── baseline/
 │   ├── dataset.py
 │   ├── infer.py

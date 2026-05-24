@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TAAC 2026 Leaderboard - self-supervised</title>
+  <style>
+    body { margin: 0; background: #06101f; color: #e5e7eb; font-family: Inter, "Microsoft YaHei", Arial, sans-serif; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 42px; }
+    h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: .2px; }
+    .sub { color: #94a3b8; margin-bottom: 22px; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .card { background: linear-gradient(135deg, #0f172a, #10243f); border: 1px solid #1e3a5f; border-radius: 16px; padding: 16px 18px; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+    .k { color: #7dd3fc; font-size: 13px; }
+    .v { font-size: 25px; font-weight: 800; margin-top: 5px; }
+    .viz { background: #07111f; border: 1px solid #1e293b; border-radius: 18px; padding: 10px; }
+    img { width: 100%; display: block; border-radius: 12px; }
+    .note { margin-top: 18px; color: #cbd5e1; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>TAAC 2026 Leaderboard Snapshot</h1>
+    <div class="sub">Team <b>self-supervised</b>, final leaderboard date 2026-05-23</div>
+    <section class="cards">
+      <div class="card"><div class="k">Rank</div><div class="v">#364 / 1861</div></div>
+      <div class="card"><div class="k">Best AUC</div><div class="v">0.82725</div></div>
+      <div class="card"><div class="k">Rank Band</div><div class="v">Top 19.6%</div></div>
+      <div class="card"><div class="k">Gap to #1</div><div class="v">0.01103</div></div>
+    </section>
+    <section class="viz"><img src="self_supervised_leaderboard_dashboard.svg" alt="leaderboard visualization" /></section>
+    <section class="note">
+      self-supervised 最终分数为 0.82725，排名 #364，位于全部 1861 支队伍的前 19.6%，超过 80.5% 的队伍。
+      最终榜首分数为 0.83828，差距 0.01103。图中同时展示了分数走势、排名走势、最终分布以及 Top 队伍附近的相对位置。
+    </section>
+  </main>
+</body>
+</html>

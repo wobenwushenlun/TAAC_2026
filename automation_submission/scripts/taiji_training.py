@@ -783,7 +783,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Upload Taiji training files, update trainFiles, and optionally start the task."
     )
     parser.add_argument("--task-id", help="internal numeric task id used by the detail API")
-    parser.add_argument("--job-id", help="displayed Job ID, e.g. angel_training_ams_2026_...")
+    parser.add_argument("--job-id", help="displayed platform Job ID string")
     parser.add_argument("--job-name", help="displayed job name, used only when it is unique")
     parser.add_argument("--list-tasks", action="store_true", help="print task list with internal ids and exit")
     parser.add_argument("--list-task-files", action="store_true", help="print trainFiles for one task and exit")

@@ -1,0 +1,17 @@
+{
+  "team": "self-supervised",
+  "date": "2026-05-23",
+  "rank": 364,
+  "total": 1861,
+  "score": 0.82725,
+  "leader_score": 0.83828,
+  "gap_to_top": 0.01103,
+  "top_percentile": 19.56,
+  "beat_percentile": 80.49,
+  "better_count": 363,
+  "best_time": "2026-05-19 03:33:06",
+  "p50": 0.81387,
+  "p90": 0.82976,
+  "p95": 0.83127,
+  "p99": 0.83283
+}
